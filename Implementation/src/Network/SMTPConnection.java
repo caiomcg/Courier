@@ -28,6 +28,7 @@ public class SMTPConnection {
     /* Create an SMTPConnection object. Create the socket and the
     associated streams. Initialize SMTP connection. */
     public SMTPConnection(Envelope envelope) throws IOException {
+        System.out.println("Connecting");
         connection = new Socket(envelope.DestAddr, SMTP_PORT);
         fromServer = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         toServer   = new DataOutputStream(connection.getOutputStream());
@@ -49,7 +50,7 @@ public class SMTPConnection {
         System.out.println("Sending FROM");
         sendCommand("MAIL FROM:<" + envelope.Sender + ">", 250);
         System.out.println("Sending TO");
-        sendCommand("RCPT TO:<" + envelope.Sender + ">", 250);
+        sendCommand("RCPT TO:<" + envelope.Recipient + ">", 250);
         System.out.println("Sending DATA");
         sendCommand("DATA", 354);
         System.out.println("Sending MESSAGE");
@@ -82,12 +83,13 @@ public class SMTPConnection {
 
     /* Parse the reply line from the server. Returns the reply code.
     */
-    private int parseReply(String reply) {
+    private int parseReply(String reply) throws IOException {
         try {
             return Integer.parseInt(reply.split(" ")[0]);
         } catch (NumberFormatException exc) {
-            return 0;
+            System.out.println("ERROR");
         }
+        throw new IOException("Invalid return code - " + reply.split(" ")[0]);
     }
 
     /* Destructor. Closes the connection if something bad happens. */
